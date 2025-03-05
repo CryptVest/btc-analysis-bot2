@@ -38,8 +38,15 @@ What to analyze:
 1. Count of BULL (open > close) and BEAR (close > open) in each session.
 2. Trends based on session behavior and day of the week.
 3. Probability of BULL/BEAR per hour.
-4. Trade recommendations for today.
+4. recommendations if i want to trade today.
 5. Summary.
+
+make sure that each day has each 1 bull / bear on each session. For Example : 
+Tuesday 
+Asia : Bull
+London : bear
+New York : bull
+close : bull
 """
 
 # Prepare API request
