@@ -11,31 +11,45 @@ if not os.path.exists(ANALYSIS_FILE):
 # Discord Webhook URL
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1346726358918889584/P_940vbYSOJx9xTNol5RwVa6b3dAFeRl9XMe-NC_KM2eUHW0bh8zk8Si9ob_ckpMZH5z"
 
-# Load analysis result
-with open(ANALYSIS_FILE, "r") as f:
-    analysis_content = f.read()
+# Load and clean analysis result
+with open(ANALYSIS_FILE, "r", encoding="utf-8") as f:
+    analysis_content = f.read().strip()  # Remove excessive spaces/newlines
 
-# Discord message limit
-MAX_LENGTH = 2000  
+# Discord message limit (set slightly lower to be safe)
+MAX_LENGTH = 1990  
 
-# Function to split long messages
+# Function to split message safely
 def split_message(message, max_length=MAX_LENGTH):
-    """Splits a long message into multiple parts under max_length characters."""
-    return [message[i : i + max_length] for i in range(0, len(message), max_length)]
+    """Splits a long message into chunks without breaking words abruptly."""
+    words = message.split(" ")
+    parts = []
+    part = ""
 
-# Split the message
+    for word in words:
+        if len(part) + len(word) + 1 > max_length:  # +1 for space
+            parts.append(part.strip())  # Add current part and reset
+            part = word
+        else:
+            part += " " + word
+    
+    if part:
+        parts.append(part.strip())
+
+    return parts
+
+# Split the message into safe parts
 parts = split_message(analysis_content)
 
 # Send each part separately
 for i, part in enumerate(parts):
     data = {"content": f"**Daily BTC Analysis (Part {i+1}/{len(parts)})**\n{part}"}
-    
+
     response = requests.post(DISCORD_WEBHOOK_URL, json=data)
-    
+
     if response.status_code == 204:
-        print(f"✅ Part {i+1} sent successfully!")
+        print(f"✅ Part {i+1}/{len(parts)} sent successfully!")
     else:
         print(f"❌ Error sending Part {i+1}: {response.status_code}, {response.text}")
-        break  # Stop if there's an error
+        break  # Stop on error
 
-print("🚀 All parts sent successfully!") 
+print("🚀 All parts processed!")  
