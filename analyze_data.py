@@ -37,16 +37,12 @@ Trading sessions in UTC:
 What to analyze:
 1. Count of BULL (open > close) and BEAR (close > open) in each session.
 2. Trends based on session behavior and day of the week.
-3. Probability of BULL/BEAR per hour.
+3. Probability of BULL/BEAR per hour since 27 Feb.
 4. recommendations if i want to trade today.
 5. Summary.
 
-make sure that each day has each 1 bull / bear on each session. For Example : 
-in each day , each session is either bull or bear 
-Asia : Bull
-London : bear
-New York : bull
-close : bull
+make sure in each day , each session is either bull or bear 
+and i want the header be analysis of btc from 27 Feb - (dd/mm of the current date)
 """
 
 # Prepare API request
