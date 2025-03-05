@@ -13,31 +13,31 @@ DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1346726358918889584/P_94
 
 # Load and clean analysis result
 with open(ANALYSIS_FILE, "r", encoding="utf-8") as f:
-    analysis_content = f.read().strip()  # Remove excessive spaces/newlines
+    analysis_content = f.read().strip()  # Trim excessive spaces/newlines
 
-# Discord message limit (set slightly lower to be safe)
-MAX_LENGTH = 1990  
+# Discord message limit (safe buffer)
+MAX_LENGTH = 1900  
 
-# Function to split message safely
-def split_message(message, max_length=MAX_LENGTH):
-    """Splits a long message into chunks without breaking words abruptly."""
-    words = message.split(" ")
+def split_message(text, max_length=MAX_LENGTH):
+    """Splits a long message at safe points (periods, newlines) to stay under max_length."""
     parts = []
-    part = ""
+    while len(text) > max_length:
+        # Find the best split point (preferably at a sentence end or newline)
+        split_index = text[:max_length].rfind(".")  # Try to split at a full stop
+        if split_index == -1:  
+            split_index = text[:max_length].rfind("\n")  # Otherwise, try newline
+        if split_index == -1:  
+            split_index = max_length  # If no good split, force at max_length
+        
+        parts.append(text[:split_index+1].strip())  # Include the full stop
+        text = text[split_index+1:].strip()  # Continue with remaining text
 
-    for word in words:
-        if len(part) + len(word) + 1 > max_length:  # +1 for space
-            parts.append(part.strip())  # Add current part and reset
-            part = word
-        else:
-            part += " " + word
-    
-    if part:
-        parts.append(part.strip())
+    if text:
+        parts.append(text.strip())  # Add remaining part
 
     return parts
 
-# Split the message into safe parts
+# Split the message
 parts = split_message(analysis_content)
 
 # Send each part separately
