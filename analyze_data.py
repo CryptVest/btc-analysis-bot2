@@ -42,7 +42,7 @@ What to analyze:
 5. Summary.
 
 make sure that each day has each 1 bull / bear on each session. For Example : 
-Tuesday 
+in each day , each session is either bull or bear 
 Asia : Bull
 London : bear
 New York : bull
