@@ -8,22 +8,24 @@ API_URL = "https://openrouter.ai/api/v1/chat/completions"
 API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 if not API_KEY:
-    print("❌ Error: API key is missing! Set it in GitHub Secrets.")
-    exit(1)
+    raise ValueError("❌ Error: API key is missing! Check GitHub Secrets and workflow settings.")
+
+print(f"✅ API Key Loaded: {API_KEY[:5]}********")  # Print only first 5 chars for security
 
 # Load BTC price data
-try:
-    df = pd.read_csv("btc_hourly_prices.csv")
-except FileNotFoundError:
-    print("❌ Error: btc_hourly_prices.csv not found.")
-    exit(1)
+DATA_FILE = "btc_hourly_prices.csv"
+
+if not os.path.exists(DATA_FILE):
+    raise FileNotFoundError("❌ Error: btc_hourly_prices.csv not found.")
+
+df = pd.read_csv(DATA_FILE)
 
 # Convert only recent data to JSON format to avoid too large input
 price_data = df.tail(48).to_dict(orient="records")  # Last 48 hours only
 
 # Define the prompt for DeepSeek
 prompt = f"""
-Analyze the following BTC hourly price data:
+Analyze the following BTC hourly price data from 27 Feb 2025:
 {json.dumps(price_data, indent=2)}
 
 Trading sessions in UTC:
@@ -52,22 +54,27 @@ headers = {
 }
 
 # Send request to DeepSeek
-response = requests.post(API_URL, headers=headers, json=data)
+try:
+    response = requests.post(API_URL, headers=headers, json=data)
+    response.raise_for_status()  # Raise error for non-200 responses
+    response_json = response.json()
 
-# Handle response
-if response.status_code == 200:
-    try:
-        result = response.json()["choices"][0]["message"]["content"]
-        
-        # Save analysis result
-        with open("analysis_result.txt", "w") as f:
-            f.write(result)
-        print("✅ Analysis saved to analysis_result.txt")
-    
-    except (KeyError, IndexError, json.JSONDecodeError):
-        print("❌ Error: Unexpected response format:", response.text)
-        exit(1)
+    # Extract response content
+    result = response_json.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-else:
-    print(f"❌ Error {response.status_code}: {response.text}")
+    if not result:
+        raise ValueError("❌ Error: DeepSeek returned an empty response.")
+
+    # Save analysis result
+    with open("analysis_result.txt", "w") as f:
+        f.write(result)
+    print("✅ Analysis saved to analysis_result.txt")
+
+except requests.exceptions.RequestException as e:
+    print(f"❌ Request Error: {e}")
+    exit(1)
+
+except (KeyError, IndexError, json.JSONDecodeError) as e:
+    print(f"❌ Error parsing DeepSeek response: {e}")
+    print(f"Response content: {response.text}")
     exit(1)
