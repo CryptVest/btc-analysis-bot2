@@ -1,4 +1,10 @@
 import requests
+import os
+
+if not os.path.exists("analysis_result.txt"):
+    print("Error: analysis_result.txt not found!")
+    exit(1)
+
 
 # Discord Webhook URL
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1346726358918889584/P_940vbYSOJx9xTNol5RwVa6b3dAFeRl9XMe-NC_KM2eUHW0bh8zk8Si9ob_ckpMZH5z"
