@@ -3,12 +3,12 @@ import pandas as pd
 import json
 import os
 
-# Define DeepSeek API URL and fetch API key
+# Define DeepSeek API URL and API Key (Replace with your new API key)
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-API_KEY = os.getenv("DEEPSEEK_API_KEY")
+API_KEY = "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"
 
 if not API_KEY:
-    raise ValueError("❌ Error: API key is missing! Check GitHub Secrets and workflow settings.")
+    raise ValueError("❌ Error: API key is missing!")
 
 print(f"✅ API Key Loaded: {API_KEY[:5]}********")  # Print only first 5 chars for security
 
@@ -44,7 +44,7 @@ What to analyze:
 
 # Prepare API request
 data = {
-    "model": "deepseek-chat",
+    "model": "deepseek/deepseek-chat:free",  # Ensure OpenRouter model format
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.7
 }
