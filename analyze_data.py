@@ -1,24 +1,30 @@
 import requests
 import pandas as pd
 import json
-
-# DeepSeek API details
 import os
 
+# Define DeepSeek API URL and fetch API key
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
 API_KEY = os.getenv("DEEPSEEK_API_KEY")
-headers = {"Authorization": f"Bearer {API_KEY}"}
 
+if not API_KEY:
+    print("❌ Error: API key is missing! Set it in GitHub Secrets.")
+    exit(1)
 
 # Load BTC price data
-df = pd.read_csv("btc_hourly_prices.csv")
+try:
+    df = pd.read_csv("btc_hourly_prices.csv")
+except FileNotFoundError:
+    print("❌ Error: btc_hourly_prices.csv not found.")
+    exit(1)
 
-# Convert data to JSON format for DeepSeek
-price_data = df.to_dict(orient="records")
+# Convert only recent data to JSON format to avoid too large input
+price_data = df.tail(48).to_dict(orient="records")  # Last 48 hours only
 
 # Define the prompt for DeepSeek
 prompt = f"""
 Analyze the following BTC hourly price data:
-{price_data}
+{json.dumps(price_data, indent=2)}
 
 Trading sessions in UTC:
 - Asia (00:00 - 06:00)
@@ -36,7 +42,7 @@ What to analyze:
 
 # Prepare API request
 data = {
-    "model": "deepseek-coder",
+    "model": "deepseek-chat",
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.7
 }
@@ -48,19 +54,20 @@ headers = {
 # Send request to DeepSeek
 response = requests.post(API_URL, headers=headers, json=data)
 
+# Handle response
 if response.status_code == 200:
-    result = response.json()["choices"][0]["message"]["content"]
+    try:
+        result = response.json()["choices"][0]["message"]["content"]
+        
+        # Save analysis result
+        with open("analysis_result.txt", "w") as f:
+            f.write(result)
+        print("✅ Analysis saved to analysis_result.txt")
     
-    # Save analysis result
-    with open("analysis_result.txt", "w") as f:
-        f.write(result)
-    print("✅ Analysis saved to analysis_result.txt")
+    except (KeyError, IndexError, json.JSONDecodeError):
+        print("❌ Error: Unexpected response format:", response.text)
+        exit(1)
+
 else:
-    print(f"❌ Error: {response.status_code}, {response.text}")
-
-try:
-    with open("analysis_result.txt", "w") as f:
-        f.write("DeepSeek analysis result here...")
-except Exception as e:
-    print(f"Error writing analysis_result.txt: {e}")
-
+    print(f"❌ Error {response.status_code}: {response.text}")
+    exit(1)
