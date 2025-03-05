@@ -18,6 +18,29 @@ with open(ANALYSIS_FILE, "r", encoding="utf-8") as f:
 # Discord message limit (safe buffer)
 MAX_LENGTH = 1900  
 
+def format_for_discord(text):
+    """Formats tables & messages for better readability in Discord."""
+    lines = text.split("\n")
+    formatted_lines = []
+    inside_table = False
+
+    for line in lines:
+        if "|" in line:  # Detects a table row
+            if not inside_table:
+                formatted_lines.append("```")  # Open code block
+                inside_table = True
+            formatted_lines.append(line)  # Add table row
+        else:
+            if inside_table:
+                formatted_lines.append("```")  # Close code block
+                inside_table = False
+            formatted_lines.append(line)  # Add normal text
+
+    if inside_table:  # Ensures table is closed
+        formatted_lines.append("```")
+
+    return "\n".join(formatted_lines)
+
 def split_message(text, max_length=MAX_LENGTH):
     """Splits a long message at safe points (periods, newlines) to stay under max_length."""
     parts = []
@@ -37,8 +60,11 @@ def split_message(text, max_length=MAX_LENGTH):
 
     return parts
 
-# Split the message
-parts = split_message(analysis_content)
+# Format content properly
+formatted_content = format_for_discord(analysis_content)
+
+# Split the message safely
+parts = split_message(formatted_content)
 
 # Send each part separately
 for i, part in enumerate(parts):
