@@ -57,3 +57,10 @@ if response.status_code == 200:
     print("✅ Analysis saved to analysis_result.txt")
 else:
     print(f"❌ Error: {response.status_code}, {response.text}")
+
+try:
+    with open("analysis_result.txt", "w") as f:
+        f.write("DeepSeek analysis result here...")
+except Exception as e:
+    print(f"Error writing analysis_result.txt: {e}")
+
