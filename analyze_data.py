@@ -3,8 +3,11 @@ import pandas as pd
 import json
 
 # DeepSeek API details
-API_KEY = "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"
-API_URL = "https://openrouter.ai/api/v1/chat/completions"
+import os
+
+API_KEY = os.getenv("DEEPSEEK_API_KEY")
+headers = {"Authorization": f"Bearer {API_KEY}"}
+
 
 # Load BTC price data
 df = pd.read_csv("btc_hourly_prices.csv")
