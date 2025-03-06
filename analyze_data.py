@@ -3,24 +3,21 @@ import pandas as pd
 import json
 import os
 
-# Define DeepSeek API URL and API Key (Replace with your valid API key)
+# Define DeepSeek API URL and API Key
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 API_KEY = "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"
 
 if not API_KEY:
     raise ValueError("❌ Error: API key is missing!")
 
-print(f"✅ API Key Loaded: {API_KEY[:5]}********")  # Print only first 5 chars for security
+print(f"✅ API Key Loaded: {API_KEY[:5]}********")  # Print first 5 chars for security
 
 # Load BTC price data
 DATA_FILE = "btc_hourly_prices.csv"
-
 if not os.path.exists(DATA_FILE):
     raise FileNotFoundError("❌ Error: btc_hourly_prices.csv not found.")
 
 df = pd.read_csv(DATA_FILE)
-
-# Convert only recent data to JSON format to avoid too large input
 price_data = df.tail(48).to_dict(orient="records")  # Last 48 hours only
 
 # Define the prompt for DeepSeek R1
@@ -41,19 +38,22 @@ What to analyze:
 4. Recommendations if I want to trade today.
 5. Summary.
 
-Make sure each day, each session is either BULL or BEAR.  
+Make sure each day, each session is either BULL or BEAR.
 Also, set the header as: **Analysis of BTC from 27 Feb - (dd/mm of the current date)**
 """
 
 # Prepare API request
 data = {
-    "model": "deepseek/deepseek-r1:free",  # Update to DeepSeek R1 model
+    "model": "deepseek/deepseek-r1:free",  # Ensure R1 model
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.7
 }
+
 headers = {
     "Authorization": f"Bearer {API_KEY}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://yourwebsite.com",  # REQUIRED by OpenRouter
+    "X-Title": "BTC Analysis Bot"  # REQUIRED by OpenRouter
 }
 
 # Send request to DeepSeek
@@ -62,11 +62,15 @@ try:
     response.raise_for_status()  # Raise error for non-200 responses
     response_json = response.json()
 
-    # ✅ Debugging: Print full response
     print("🔍 Raw API Response:", json.dumps(response_json, indent=2))  
 
-    # Extract response content
-    result = response_json.get("choices", [{}])[0].get("message", {}).get("content", "")
+    # Extract response content (Fix: Check for "reasoning" if "content" is empty)
+    message_data = response_json.get("choices", [{}])[0].get("message", {})
+    result = message_data.get("content", "").strip()
+
+    if not result:
+        print("⚠️ Response is empty! Checking 'reasoning' instead...")
+        result = message_data.get("reasoning", "").strip()
 
     if not result:
         raise ValueError("❌ Error: DeepSeek returned an empty response.")
