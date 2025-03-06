@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # 🔥 Updated from v3 to v4
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4  # 🔥 Updated from v3 to v4
         with:
           python-version: '3.10'
 
@@ -24,7 +24,7 @@ jobs:
         run: python fetch_btc_data.py  # Ensure this script saves btc_hourly_prices.csv
 
       - name: Read & Log BTC Data
-        run: python debug_csv.py  # Logs CSV content for debugging
+        run: cat btc_hourly_prices.csv  # 🔥 Directly print CSV content for debugging
 
       - name: Run Analysis Script
         run: python analyze_data.py  # Sends BTC data to DeepSeek for AI analysis
@@ -33,7 +33,7 @@ jobs:
         run: python send_to_discord.py  # Sends results via Discord Webhook
 
       - name: Upload CSV as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # 🔥 Updated from v3 to v4
         with:
           name: btc_data_log
           path: btc_hourly_prices.csv
