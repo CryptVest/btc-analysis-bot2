@@ -3,7 +3,7 @@ import pandas as pd
 import json
 import os
 
-# Define DeepSeek API URL and API Key (Replace with your new API key)
+# Define DeepSeek API URL and API Key
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 API_KEY = "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"
 
@@ -35,25 +35,27 @@ Trading sessions in UTC:
 - Close (20:00 - 00:00)
 
 What to analyze:
-1. Count of BULL (open > close) and BEAR (close > open) in each session.
+1. Count of BULL (open > close) and BEAR (close > open) for each session.
 2. Trends based on session behavior and day of the week.
 3. Probability of BULL/BEAR per hour since 27 Feb.
-4. recommendations if i want to trade today.
+4. Recommendations if I want to trade today (pattenr based on day of the weeks + what could probably happen based on the data gathered  / analyse).
 5. Summary.
 
-make sure in each day , each session is either bull or bear 
-and i want the header be analysis of btc from 27 Feb - (dd/mm of the current date)
+Make sure each session in a day is either bull or bear.
+Header format: Analysis of BTC from 27 Feb - (dd/mm of the current date)
 """
 
 # Prepare API request
 data = {
-    "model": "deepseek/deepseek-chat:free",  # Ensure OpenRouter model format
+    "model": "deepseek/deepseek-r1:free",  # ✅ Updated to DeepSeek R1
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.7
 }
 headers = {
     "Authorization": f"Bearer {API_KEY}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://yourwebsite.com",  # Optional, replace with your site URL
+    "X-Title": "BTC Trading Analysis Bot"  # Optional, replace with your project title
 }
 
 # Send request to DeepSeek
