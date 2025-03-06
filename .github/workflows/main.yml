@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4  
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -21,21 +21,22 @@ jobs:
         run: pip install pandas requests
 
       - name: Fetch BTC Data
-        run: python fetch_btc_data.py  
+        run: |
+          ls -lah  # 🔍 Debug: List all files to check if fetch_data.py exists
+          pwd  # 🔍 Debug: Print the current working directory
+          python fetch_data.py  # ✅ Corrected script name
 
       - name: Read & Log BTC Data
-        run: cat btc_hourly_prices.csv  
+        run: cat btc_hourly_prices.csv  # Print CSV content for debugging
 
       - name: Run Analysis Script
-        run: python analyze_data.py  
+        run: python analyze_data.py  # Sends BTC data to DeepSeek for AI analysis
 
       - name: Send to Discord
-        run: python send_to_discord.py  
+        run: python send_to_discord.py  # Sends results via Discord Webhook
 
-      # 🔥 TEMPORARY FIX: Use v4 correctly
-      - name: Upload CSV as Artifact  
-        uses: actions/upload-artifact@v4  # ✅ Using v4  
+      - name: Upload CSV as Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: btc_data_log
           path: btc_hourly_prices.csv
-          retention-days: 7  # ✅ Keep for 7 days (avoids GitHub cache issues)
